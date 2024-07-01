@@ -91,10 +91,11 @@ export const Lista = () => {
         }
         const data = await response.json()
         console.log(data);
+        setTodo(data.todos);
         return data
     }
     const createUser = async () => {
-        const uri = `${host}/users`;
+        const uri = `${host}/users/${user}`;
         const createNewUser = {
             username: { user }
         };
@@ -106,13 +107,17 @@ export const Lista = () => {
             body: JSON.stringify(createNewUser)
         };
         try {
-            const data = await response.json()
             const response = await fetch(uri, options);
+            const data = await response.json()
+            
             if (!response.ok) {
                 console.log('Error:', response.status, response.statusText);
                 //response.status === 404 ? return data : return console.log('Error en la aplicación');
                 if (response.status === 404) {
                     console.log("Creando user");
+                    return data;
+                }else if(response.status === 400){
+                    console.log("Usuario ya existe");
                     return data;
                 }
                 return;
@@ -180,6 +185,7 @@ export const Lista = () => {
 
 
     useEffect(() => {
+        createUser();
         getList();
     }, [])
 
@@ -197,20 +203,27 @@ export const Lista = () => {
                 <div className="row d-flex justify-content-center">
                     <input type="text" className="form-control" id="exampleInputEmail1" value={valueInput} onChange={(event) => setValueInput(event.target.value)} placeholder="Task" />
                 </div>
-                <h4 className={todo.length == 0 ? "" : "d-none"}>El usuario {user}, no tiene tareas pendientes</h4>
+                    <h4 className={todo.length == 0 ? "" : "d-none"}>El usuario {user}, no tiene tareas pendientes</h4>
 
-                <ul className="list-group mt-3">
-                    {todo.map((item) =>
-                        <li className="list-group-item d-flex justify-content-between" key={item.id}>
-                            {item.label}
-                            {/* <input type="text" className="form-control" id="exampleInputEmail1" value={valueInput} onChange={(event) => setValueInput(event.target.value)} placeholder="Task"/> */}
-                            <button type="button" onClick={() => updateTask(item.id)} className="btn btn-primary"><i className="fas fa-edit"></i></button>
-                            <button type="button" onClick={() => deleteTask(item.id)} className="btn btn-primary"><i className="fas fa-trash"></i></button>
-                        </li>
-                    )
-                    }
-                </ul>
+                    <ul className="list-group mt-3">
+                        {todo.map((item) =>
+                            <li className="list-group-item d-flex justify-content-between" key={item.id}>
+                                {item.label}
+                                {/* <input type="text" className="form-control" id="exampleInputEmail1" value={valueInput} onChange={(event) => setValueInput(event.target.value)} placeholder="Task"/> */}
+                                <div className="d-flex">
+                                <button type="button" onClick={() => updateTask(item.id)} className="btn btn-primary me-3"><i className="fas fa-edit"></i></button>
+                                <button type="button" onClick={() => deleteTask(item.id)} className="btn btn-primary"><i className="fas fa-trash"></i></button>
 
+                                </div>
+                            </li>
+                        )
+
+                        }
+                    </ul>
+
+                <div className="row d-flex justify-content-center">
+                    <div className="col-xs-auto col-md-6 text-end mt-3">{todo.length} task</div>
+                </div>
             </form>
         </div>
     );
